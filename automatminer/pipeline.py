@@ -216,6 +216,12 @@ class MatPipe(DataframeTransformer, LoggableMixin):
         if isinstance(test_spec, Iterable):
             traindf = df.iloc[~np.asarray(test_spec)]
             testdf = df.iloc[np.asarray(test_spec)]
+        elif isinstance(test_spec, np.random.RandomState):
+            testdf = df.sample(frac=test_spec, random_state=test_spec)
+            traindf = df[~df.isin(testdf)].dropna()
+        elif isinstance(test_spec, float):
+            testdf = df.sample(frac=test_spec, random_state=int(test_spec * 10))
+            traindf = df[~df.isin(testdf)].dropna()
         else:
             testdf, traindf = np.split(df.sample(frac=1),
                                        [int(test_spec * len(df))])
